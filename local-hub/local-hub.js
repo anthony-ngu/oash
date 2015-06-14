@@ -1,6 +1,7 @@
 var io = require('socket.io-client');
 var fs = require('fs');
 var securityCredentials = require('./securityCredentials.js');
+var isEqual = require('lodash.isequal'); // for comparison of JSON objects
 
 var deviceTypeMap = {};
 deviceTypeMap["Test"] = require('./devices/Test.js');
@@ -9,37 +10,55 @@ deviceTypeMap["Wemo"] = require('./devices/Wemo.js');
 deviceTypeMap["SparkButton"] = require('./devices/SparkButton.js');
 deviceTypeMap["WeatherUnderground"] = require("./devices/WeatherUnderground.js");
 deviceTypeMap["SparkMotion"] = require('./devices/SparkMotion.js');
+deviceTypeMap["ZWave"] = require('./devices/ZWaveDevice.js');
+deviceTypeMap["YamahaReceiver"] = require('./devices/YamahaReceiver.js');
 // TODO: Add new device types that you create here
 
 // populated by config file
 var deviceTypeDictionary = {};
 var yourDevicesDictionary = {};
 var yourScenariosDictionary = {};
+var yourButtonsDictionary = {};
 
 // populated using the config file and our parsing mechanism
 var runningDevicesDictionary = {};
 var runningScenarios = [];
 
+var configModifiedTime;
+var fileData;
+
 // Loads the scripts/devices from the json file
 var ReadData = function(){
-  var fileData;
+  fs.stat('./config.json', function(err, stats){
+    console.log("Config Last Updated At: ");
+    console.log(stats.mtime);
+    configModifiedTime = stats.mtime.getTime();
+  });
   fs.readFile('./config.json', 'utf8', function (err, data) {
     if (err) throw err;
     fileData = JSON.parse(data);
     // console.log(fileData);
 
-    deviceTypeDictionary = fileData.deviceTypes;
-    yourDevicesDictionary = fileData.yourDevices;
-    yourScenariosDictionary = fileData.yourScenarios;
-    // console.log("deviceTypeDictionary-----------------");
-    // console.log(deviceTypeDictionary);
-    // console.log("yourDevicesDictionary-----------------");
-    // console.log(yourDevicesDictionary);
-    // console.log("yourScenariosDictionary-----------------");
-    // console.log(yourScenariosDictionary);
+    // Checks the changes. If it has not affected the deviceTypes, devices, or Scenario, don't do anything
+    if(!(isEqual(deviceTypeDictionary, fileData.deviceTypes) &&
+    isEqual(yourDevicesDictionary, fileData.yourDevices) &&
+    isEqual(yourScenariosDictionary, fileData.yourScenarios)))
+    {
+      deviceTypeDictionary = fileData.deviceTypes;
+      yourDevicesDictionary = fileData.yourDevices;
+      yourScenariosDictionary = fileData.yourScenarios;
+      yourButtonsDictionary = fileData.yourButtons;
 
-    ClearRunningDictionaries();
-    PopulateRunningDictionaries();
+      // console.log("deviceTypeDictionary-----------------");
+      // console.log(deviceTypeDictionary);
+      // console.log("yourDevicesDictionary-----------------");
+      // console.log(yourDevicesDictionary);
+      // console.log("yourScenariosDictionary-----------------");
+      // console.log(yourScenariosDictionary);
+
+      ClearRunningDictionaries();
+      PopulateRunningDictionaries();
+    }
   });
 };
 ReadData();
@@ -56,17 +75,48 @@ socket.on('connect', function(){
 });
 console.log("connection requested");
 
-
 socket.on('config', function(data){
-  //TODO: check the hash of the two files for differences, if there is a difference, then make the change.
   console.log('data');
   console.log(data);
-  fs.writeFile('./config.json', data, function (err) {
-    if (err) throw err;
-    console.log('It\'s saved!');
-  });
+  console.log('configModifiedTime');
+  console.log(configModifiedTime);
+  console.log('data.lastModifiedTime');
+  console.log(data.lastModifiedTime);
+
+  if(data.lastModifiedTime > configModifiedTime)
+  {
+    console.log("server config is more up to date");
+    fs.writeFile('./config.json', data.data, function (err) {
+      if (err) throw err;
+      console.log('It\'s saved!');
+    });
+  }else{
+    console.log("local config is more up to date");
+    socket.emit('config', { lastModifiedTime: configModifiedTime, data: JSON.stringify(fileData)});
+  }
 });
 
+socket.on('actionsCalled', function(data){
+  console.log('data');
+  // console.log(data);
+  var actions = data.actions;
+  // console.log(actions);
+  // for each action, parse it and do it
+  for (var actionId in actions)
+  {
+    var action = actions[actionId];
+
+    // console.log(action.device);
+    // console.log(action.action);
+    // console.log(action.params);
+    
+    var deviceName = action.device;
+    var actionFunction = action.action;
+    var params = action.params;
+    var device = runningDevicesDictionary[deviceName];
+    device[actionFunction](params);
+  }
+})
 var ClearRunningDictionaries = function(){
   // removes all the listeners for the specific triggerNames
   for (var deviceName in runningDevicesDictionary) {
@@ -157,6 +207,11 @@ var PopulateRunningDictionaries = function()
     if(defaultDevice && deviceTypeMap[type])
     {
       runningDevicesDictionary[nameOfYourDevice] = new deviceTypeMap[type](params);
+    }
+    else if(type.indexOf("ZWave-") === 0) // special check for zwave devices
+    {
+      console.log("ZWave Device Added!");
+      runningDevicesDictionary[nameOfYourDevice] = new deviceTypeMap["ZWave"](params);
     }
   }
   // console.logconsole.log("--------------------------------");

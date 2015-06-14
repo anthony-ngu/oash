@@ -26,15 +26,15 @@ There are three main components:
 0. Your website should now be operational!
 0. Feel free to customize the login page to your own design whims.
 
-##Setup the Local-Hub
-0. Install Nodejs on your local-hub machine
+##Setup the Local-Hub (RPi2 instructions [here](GetStartedOnRPi2.md))
+0. Install Nodejs v0.10.28 on your local-hub machine
 0. Place the local-hub folder on the machine
-0. Rename `public_securityCredentials.js` to `securityCredentials.js` and update it's contents with your own information
+0. Open up a terminal or command line window
+0. If you are on a Mac or Linux machine run `sh install.sh`, if you are on a PC run `install.bat`. This will install the node modules needed in all the right places and rename `public_securityCredentials.js` to `securityCredentials.js`.
+0. Update `securityCredentials.js` with your own information
   * The contents of this file are used to connect to the various services / devices.
   * The required portion needs to match one of the users that you put in the online-hub `securityCredentials.js`. This setting allows only your local-hub to connect to the online-hub.
   * The optional portions are for connecting to devices/services
-0. Open up a terminal or command line window
-0. Change directories to the local-hub folder and run the command `npm install`
 0. Run the local-hub.js program using `node local-hub.js`
 0. Your local-hub is now setup!
 0. If you ever want to update the local-hub with the latest possible devices, the easiest way will be to copy and replace the files (don't delete since that will remove your securityCredentials javascript file.
@@ -43,6 +43,7 @@ There are three main components:
 0. Go to a browser and enter your website's url
 0. Login using the authentication method of your choice. (I used Github)
 0. Add scenarios or devices using the buttons on the website.
+  * Some devices will require IP Addresses. If this is the case, you can find your device's IP Address in your router's webpage.
 0. Any changes you make will automatically be sent to your local-hub!
 
 ##If you want to contribute to our device library or add your own devices, learn more in the [Device Creation Guidelines](DeviceCreationGuidelines.md)

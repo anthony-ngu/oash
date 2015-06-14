@@ -6,7 +6,7 @@
 * [Supported Devices](#supported-devices)
 * [Device Creation Guidelines](DeviceCreationGuidelines.md)
 * [Gritty Details](#gritty-details)
-* [The Future](#the-future)
+* [Version History](VersionHistory.md)
 * [Links to Supporting Modules](#links-to-supporting-modules)
 
 ##One hub to rule them all
@@ -44,10 +44,11 @@ There are other open source automation projects but **the key to the Open source
   * WeMo
   * WeatherUnderground APIs for local astronomical and weather forecasts
   * Clock for time related triggers and data
+  * Z-Wave Devices (With a [USB Z-Wave Adapter](http://amzn.to/1AByX3j))
+  * Yamaha Receivers
 
 ###Near Future:
-  * Any device that can make a HTTP POST call
-  * Any device hooked up to IFTTT
+  * Amazon Echo
 
 Want to see a device supported? You have the power to add it yourself!
 
@@ -58,30 +59,30 @@ Want to see a device supported? You have the power to add it yourself!
 ###Config File contains:
 
   **Device Type Library** - [Dictionary]
-
+    Name of type - [String]
     Device Type - [Object]
-      * Name of type - [String]
       * Array of Parameter Types for creation - (Array of strings in order with int-, double-, bool-, etc. prefixed)
+      * Data - [Dictionary]
+        * Data -> {"name":"type"}
       * Triggers - [Dictionary]
-        * Trigger -> {name:"",params:[]}
+        * Trigger -> {"name":[params]}
       * Actions - [Dictionary]
-        * Action -> {name:"",params:[]}
+        * Action -> {"name":[params]}
 
   **Your Devices** - [Dictionary]
-
+    Name your device - [String]
     Device - [Object]
-      * Name your device - [String]
       * Device Type - [String] -> Links to an entry in the Device Type Library
-      * Array of parameters for creation of device (in order) - [Array of strings of values]
+      * Dictionary of parameters for creation of device (keys match the param types in the DeviceType)
 
-  **Your Scenarios** - [Dictionary]
+  **Your Scenarios** - [Array]
 
     Scenario - [Object]
-      * Name of scenario - [String]
+      * Description of Scenario - [String]
       * Trigger - [A single Trigger structure](Future: multiple triggers together)
-        * Trigger: {description: "ScenarioTriggerDescription", device: "deviceName", trigger:"triggerName", customTrigger:"customTriggerName" params:[]}
+        * Trigger: {device: "deviceName", trigger:"triggerName", customTrigger:"customTriggerName" params:{}}
       * List of Actions to perform - [Array of Action structures]
-        * Action: {description:"ScenarioActionDescription", device: "deviceName", action: "actionName", params:[]}
+        * Action: {device: "deviceName", action: "actionName", params:{}}
 
 ###The result of the creation process using the config file above:
   **Running Devices:** Dictionary of your devices
@@ -102,11 +103,7 @@ Want to see a device supported? You have the power to add it yourself!
 
 Triggers can be made using a on("event") with a check inside (if statement that emits an event of special-naming when it is valid)
 
-##The Future
-* **Community Growth! The more people that automate devices based on the hub and come up with recipes, the more robust the functionality will be!**
-* Tie into nest api as a device or get their temperature settings, wemo, or smart things systems.
-* Create an app that will act as another device and link to your hub and automatically turn on security mode when you are away.
-* Get data from multiple spark cores like temperature in your house or motion and toggle multiple devices based off of spark too.
+##[Version History](VersionHistory.md)
 
 ##Links to Supporting Modules
 

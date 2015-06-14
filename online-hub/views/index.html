@@ -2,9 +2,7 @@
 <html lang="en" ng-app="ohh">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-
+  <title>Configurations</title>
   <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-resource.js"></script>
@@ -12,7 +10,7 @@
 
   <script src="ohh-angular.js"></script>
 </head>
-<body ng-controller="DashboardContentController as dashboardContentController">
+<body ng-controller="ConfigurationContentController as configurationContentController">
   <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
       <div class="navbar-header">
@@ -22,7 +20,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">Dashboard</a>
+        <a class="navbar-brand" href="/dashboard">Go to Dashboard</a>
       </div>
       <div id="navbar" class="collapse navbar-collapse">
         <ul class="nav navbar-nav pull-right">
@@ -34,7 +32,7 @@
 
   <div class="container">
     <div ng-if="connectionStatus.connection">Connection Status: ON</div><div ng-if="!connectionStatus.connection">Connection Status: OFF</div>
-    <div id="yourScenarios" class="col-md-6 left-border black-border full-size">
+    <div id="yourScenarios" class="col-md-6 col-sm-12 col-xs-12 left-border black-border full-size">
       <h3 style="display: inline-block;">Your Scenarios</h3>
       <button type="button" class="btn btn-success pull-right" style="margin-top:15px;" data-toggle="modal" data-target="#scenarioModal">+</button>
       
@@ -73,15 +71,11 @@
                 <!-- Trigger -->
                 <div class="form-group">
                   <label for="name">Choose a Trigger Device</label>
-                  <select class="form-control" ng-model="newScenario.trigger.device" ng-options="id as (id + ' : ' + device.type) for (id, device) in storage.yourDevices" ng-change="setTriggerDevice(newScenario.trigger.device)"></select>
+                  <select class="form-control" ng-model="newScenario.trigger.device" ng-options="id as (id + ' : ' + device.type) for (id, device) in triggerDevices" ng-change="setTriggerDevice(newScenario.trigger.device)"></select>
                 </div>
                 <div class="form-group">
                   <label for="name">Choose a Trigger</label>
                   <select class="form-control" ng-model="newScenario.trigger.trigger" ng-options="id as id for (id, trigger) in selectedTriggerDeviceType.triggers" ng-change="setTriggerFunction(newScenario.trigger.trigger)"></select>
-                </div>
-                <div class="form-group">
-                  <label for="customTrigger">Custom Trigger Name</label>
-                  <input type="text" ng-model="newScenario.trigger.customTrigger" class="form-control">
                 </div>
                 <!--
                 Add fields for parameters based on the selection above (dynamically)
@@ -138,7 +132,7 @@
                 <!-- Action -->
                 <div class="form-group">
                   <label for="name">Choose an Action Device</label>
-                  <select class="form-control" ng-model="newAction.device" ng-options="id as (id + ' : ' + device.type) for (id, device) in storage.yourDevices" ng-change="setActionDevice(newAction.device)"></select>
+                  <select class="form-control" ng-model="newAction.device" ng-options="id as (id + ' : ' + device.type) for (id, device) in actionDevices" ng-change="setActionDevice(newAction.device)"></select>
                 </div>
                 <div class="form-group">
                   <label for="name">Choose an Action</label>
@@ -181,21 +175,15 @@
             </div>
             <div id="scenario{{id}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
               <div class="panel-body">
-                Trigger: {{scenario.trigger.description}} : 
+                {{scenario.trigger.device}} : {{scenario.trigger.trigger}}
                 <ul>
-                  <li>{{scenario.trigger.device}} : {{scenario.trigger.trigger}}</li>
-                  <ul>
-                    <li ng-repeat="(id, param) in scenario.trigger.params">
-                      ({{id}} : {{param}})
-                    </li>
-                  </ul>
-                <ul>
-                  <li ng-repeat="(id, action) in scenario.actions">{{action.description}}
+                  <li ng-repeat="(id, param) in scenario.trigger.params">
+                    {{id}} : {{param}}
+                  </li>
+                  <li ng-repeat="(id, action) in scenario.actions">
+                    {{action.device}} : {{action.action}}
                     <ul>
-                      <li>{{action.device}} : {{action.action}}</li>
-                      <ul>
-                        <li ng-repeat="(id, param) in action.params">{{id}} : {{param}}</li>
-                      </ul>
+                      <li ng-repeat="(id, param) in action.params">{{id}} : {{param}}</li>
                     </ul>
                   </li>
                 </ul>
@@ -206,7 +194,7 @@
         </div>
       </div>
     </div>
-    <div id="yourDevices" class="col-md-6 right-border black-border full-size">
+    <div id="yourDevices" class="col-md-6 col-sm-12 col-xs-12 right-border black-border full-size">
       <h3 style="display: inline-block;">Your Devices</h3>
       <button type="button" class="btn btn-success pull-right" style="margin-top:15px;" data-toggle="modal" data-target="#deviceModal">+</button>
 
@@ -307,5 +295,6 @@
 
   <!-- Optional theme -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="style.css">
 </body>
 </html>
